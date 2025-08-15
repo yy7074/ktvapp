@@ -1,0 +1,13 @@
+{
+    "name": "ktv-booking/api",
+    "description": "KTV预约系统后端API",
+    "require": {
+        "php": ">=7.4",
+        "alibabacloud/dysmsapi-20170525": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "KtvBooking\\": "src/"
+        }
+    }
+} 

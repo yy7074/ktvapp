@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KTV店铺管理 - KTV预约系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* 统一的头部导航样式 */
+        header.header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header.header h1 {
+            font-size: 24px;
+            margin: 0;
+            color: white;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-item {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: #333;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        /* 旧的header样式已移除，使用统一的头部导航 */
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            font-weight: 500;
+        }
+        
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+        
+        .status-active {
+            color: #27ae60;
+            font-weight: 500;
+        }
+        
+        .status-inactive {
+            color: #e74c3c;
+            font-weight: 500;
+        }
+        
+        .location-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .back-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <!-- 统一的头部导航 -->
+    <header class="header">
+        <div class="header-content">
+            <h1>KTV预约管理系统</h1>
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-item">📊 仪表板</a>
+                <a href="ktv_manage.html" class="nav-item active">🏢 KTV管理</a>
+                <a href="user_manage.html" class="nav-item">👥 用户管理</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-header">
+            <h2 class="page-title">KTV店铺管理</h2>
+            <div>
+                <button class="btn btn-success" onclick="showAddModal()">添加KTV店铺</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>店铺列表</h3>
+            <table class="table" id="ktvTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>店铺名称</th>
+                        <th>地址</th>
+                        <th>联系电话</th>
+                        <th>评分</th>
+                        <th>位置坐标</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px;">加载中...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- 添加/编辑KTV模态框 -->
+    <div id="ktvModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle">添加KTV店铺</h3>
+            <form id="ktvForm">
+                <input type="hidden" id="ktvId" name="id">
+                
+                <div class="form-group">
+                    <label for="name">店铺名称 *</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">详细地址 *</label>
+                    <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="latitude">纬度 *</label>
+                        <input type="number" class="form-control" id="latitude" name="latitude" step="0.000001" required>
+                        <div class="location-info">例如：39.908722</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="longitude">经度 *</label>
+                        <input type="number" class="form-control" id="longitude" name="longitude" step="0.000001" required>
+                        <div class="location-info">例如：116.397496</div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">联系电话</label>
+                        <input type="tel" class="form-control" id="phone" name="phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="rating">评分</label>
+                        <input type="number" class="form-control" id="rating" name="rating" min="0" max="5" step="0.1" value="4.5">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="status">状态</label>
+                    <select class="form-control" id="status" name="status">
+                        <option value="active">营业中</option>
+                        <option value="inactive">暂停营业</option>
+                    </select>
+                </div>
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        let currentKtvId = null;
+        
+        // 页面加载时获取KTV列表
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadKtvList();
+        });
+        
+        // 检查登录状态
+        function checkAuth() {
+            const token = localStorage.getItem('admin_token');
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+        }
+        
+        // 加载KTV列表
+        async function loadKtvList() {
+            try {
+                const response = await fetch('../get_ktv_list.php', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderKtvTable(data.data || []);
+                } else {
+                    console.error('获取KTV列表失败:', data.message);
+                    document.querySelector('#ktvTable tbody').innerHTML = 
+                        '<tr><td colspan="8" style="text-align: center; color: #e74c3c;">获取数据失败</td></tr>';
+                }
+            } catch (error) {
+                console.error('网络错误:', error);
+                document.querySelector('#ktvTable tbody').innerHTML = 
+                    '<tr><td colspan="8" style="text-align: center; color: #e74c3c;">网络错误</td></tr>';
+            }
+        }
+        
+        // 渲染KTV表格
+        function renderKtvTable(ktvList) {
+            const tbody = document.querySelector('#ktvTable tbody');
+            
+            if (ktvList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #666;">暂无数据</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = ktvList.map(ktv => `
+                <tr>
+                    <td>${ktv.id}</td>
+                    <td>${ktv.name}</td>
+                    <td>${ktv.address}</td>
+                    <td>${ktv.phone || '-'}</td>
+                    <td>${ktv.rating}</td>
+                    <td>
+                        ${ktv.latitude && ktv.longitude ? 
+                            `<div>${ktv.latitude}, ${ktv.longitude}</div>
+                             <div class="location-info">
+                                <a href="https://map.baidu.com/?latlng=${ktv.latitude},${ktv.longitude}&title=${encodeURIComponent(ktv.name)}" target="_blank">在地图中查看</a>
+                             </div>` : 
+                            '-'
+                        }
+                    </td>
+                    <td><span class="status-${ktv.status}">${ktv.status === 'active' ? '营业中' : '暂停营业'}</span></td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editKtv(${ktv.id})">编辑</button>
+                        <button class="btn btn-danger" onclick="deleteKtv(${ktv.id}, '${ktv.name}')">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // 显示添加模态框
+        function showAddModal() {
+            currentKtvId = null;
+            document.getElementById('modalTitle').textContent = '添加KTV店铺';
+            document.getElementById('ktvForm').reset();
+            document.getElementById('ktvId').value = '';
+            document.getElementById('ktvModal').style.display = 'block';
+        }
+        
+        // 编辑KTV
+        async function editKtv(id) {
+            // 这里需要实现获取单个KTV详情的API
+            // 暂时使用表格中的数据
+            currentKtvId = id;
+            document.getElementById('modalTitle').textContent = '编辑KTV店铺';
+            document.getElementById('ktvId').value = id;
+            
+            // 从表格中获取数据填充表单（简化实现）
+            const row = document.querySelector(`#ktvTable tbody tr:nth-child(${id})`);
+            if (row) {
+                const cells = row.querySelectorAll('td');
+                document.getElementById('name').value = cells[1].textContent;
+                document.getElementById('address').value = cells[2].textContent;
+                document.getElementById('phone').value = cells[3].textContent === '-' ? '' : cells[3].textContent;
+                document.getElementById('rating').value = cells[4].textContent;
+                
+                // 解析坐标
+                const locationText = cells[5].querySelector('div')?.textContent;
+                if (locationText && locationText.includes(',')) {
+                    const [lat, lng] = locationText.split(',').map(s => s.trim());
+                    document.getElementById('latitude').value = lat;
+                    document.getElementById('longitude').value = lng;
+                }
+            }
+            
+            document.getElementById('ktvModal').style.display = 'block';
+        }
+        
+        // 删除KTV
+        function deleteKtv(id, name) {
+            if (confirm(`确定要删除店铺"${name}"吗？`)) {
+                // 实现删除功能
+                console.log('删除KTV:', id);
+                // TODO: 调用删除API
+            }
+        }
+        
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('ktvModal').style.display = 'none';
+        }
+        
+        // 提交表单
+        document.getElementById('ktvForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const url = currentKtvId ? '../update_ktv.php' : '../create_ktv.php';
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(currentKtvId ? '更新成功' : '添加成功');
+                    closeModal();
+                    loadKtvList();
+                } else {
+                    alert('操作失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('提交失败:', error);
+                alert('网络错误，请稍后重试');
+            }
+        });
+        
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('ktvModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html> 
