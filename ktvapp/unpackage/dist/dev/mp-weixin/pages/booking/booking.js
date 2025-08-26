@@ -74,7 +74,7 @@ const _sfc_main = {
     async getBookingDetail(id) {
       try {
         const res = await common_vendor.index.request({
-          url: "http://localhost/ktv-api/get_booking_detail.php",
+          url: "http://catdog.dachaonet.com/get_booking_detail.php",
           method: "GET",
           data: { id }
         });

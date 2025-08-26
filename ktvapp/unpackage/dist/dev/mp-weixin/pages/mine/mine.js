@@ -19,7 +19,7 @@ const _sfc_main = {
         this.statusBarHeight = systemInfo.statusBarHeight;
       }
     } catch (error) {
-      common_vendor.index.__f__("log", "at pages/mine/mine.vue:93", "获取系统信息失败，使用默认值");
+      common_vendor.index.__f__("log", "at pages/mine/mine.vue:89", "获取系统信息失败，使用默认值");
       this.statusBarHeight = 44;
     }
   },
@@ -36,7 +36,7 @@ const _sfc_main = {
     },
     async getCardList() {
       try {
-        common_vendor.index.__f__("log", "at pages/mine/mine.vue:113", "模拟获取包厢卡列表");
+        common_vendor.index.__f__("log", "at pages/mine/mine.vue:109", "模拟获取包厢卡列表");
         await new Promise((resolve) => setTimeout(resolve, 500));
         const userInfo = common_vendor.index.getStorageSync("userInfo");
         const mockBookings = common_vendor.index.getStorageSync("mockBookings") || [];
@@ -50,7 +50,7 @@ const _sfc_main = {
           created_at: booking.created_at
         }));
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/mine/mine.vue:133", "获取包厢卡列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/mine/mine.vue:129", "获取包厢卡列表失败:", error);
         this.cardList = [];
       }
     },
@@ -77,12 +77,6 @@ const _sfc_main = {
     goToBookings() {
       common_vendor.index.navigateTo({
         url: "/pages/bookings/bookings"
-      });
-    },
-    goToSettings() {
-      common_vendor.index.showToast({
-        title: "设置功能开发中",
-        icon: "none"
       });
     },
     logout() {
@@ -127,9 +121,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     j: common_assets._imports_0$1,
     k: common_vendor.o((...args) => $options.goToBookings && $options.goToBookings(...args)),
     l: common_assets._imports_0$1,
-    m: common_vendor.o((...args) => $options.goToSettings && $options.goToSettings(...args)),
-    n: common_assets._imports_0$1,
-    o: common_vendor.o((...args) => $options.logout && $options.logout(...args))
+    m: common_vendor.o((...args) => $options.logout && $options.logout(...args))
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-7c2ebfa5"]]);

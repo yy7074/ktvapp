@@ -56,10 +56,6 @@
 				<text class="menu-text">我的预约</text>
 				<image src="/static/返 回@1x.png" class="menu-arrow" mode="aspectFit"></image>
 			</view>
-			<view class="menu-item" @click="goToSettings">
-				<text class="menu-text">设置</text>
-				<image src="/static/返 回@1x.png" class="menu-arrow" mode="aspectFit"></image>
-			</view>
 			<view class="menu-item" @click="logout">
 				<text class="menu-text">退出登录</text>
 				<image src="/static/返 回@1x.png" class="menu-arrow" mode="aspectFit"></image>
@@ -164,12 +160,7 @@ export default {
 			});
 		},
 		
-		goToSettings() {
-			uni.showToast({
-				title: '设置功能开发中',
-				icon: 'none'
-			});
-		},
+
 		
 		logout() {
 			uni.showModal({
