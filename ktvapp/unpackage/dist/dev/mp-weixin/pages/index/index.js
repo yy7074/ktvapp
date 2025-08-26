@@ -28,7 +28,6 @@ const _sfc_main = {
     }
     this.checkLogin();
     this.getUserLocation();
-    this.getKtvList();
   },
   onShow() {
     this.getUserInfo();
@@ -53,47 +52,74 @@ const _sfc_main = {
     // 获取用户位置
     async getUserLocation() {
       try {
-        const authResult = await common_vendor.index.authorize({
-          scope: "scope.userLocation"
+        common_vendor.index.__f__("log", "at pages/index/index.vue:125", "开始获取用户位置...");
+        common_vendor.index.showToast({
+          title: "正在定位...",
+          icon: "loading",
+          duration: 2e3
         });
-        this.locationPermissionGranted = true;
         const locationResult = await common_vendor.index.getLocation({
           type: "gcj02",
           // 国测局坐标系
           isHighAccuracy: true,
-          highAccuracyExpireTime: 4e3
+          timeout: 1e4,
+          // 10秒超时
+          geocode: false
+          // 不需要地理编码
         });
         this.userLocation = {
           latitude: locationResult.latitude,
           longitude: locationResult.longitude,
           accuracy: locationResult.accuracy
         };
-        common_vendor.index.__f__("log", "at pages/index/index.vue:148", "用户位置获取成功:", this.userLocation);
+        this.locationPermissionGranted = true;
+        common_vendor.index.__f__("log", "at pages/index/index.vue:149", "用户位置获取成功:", this.userLocation);
+        common_vendor.index.hideToast();
         this.getKtvList();
       } catch (error) {
-        common_vendor.index.__f__("log", "at pages/index/index.vue:154", "获取位置失败:", error);
-        if (error.errMsg && error.errMsg.includes("auth deny")) {
+        common_vendor.index.__f__("log", "at pages/index/index.vue:158", "获取位置失败:", error);
+        common_vendor.index.hideToast();
+        if (error.errCode === 2 || error.errMsg && error.errMsg.includes("denied")) {
           common_vendor.index.showModal({
             title: "定位权限",
-            content: "为了为您推荐附近的KTV，请允许获取位置信息",
+            content: "为了为您推荐附近的KTV，请在系统设置中允许应用获取位置信息",
             confirmText: "去设置",
+            cancelText: "稍后再说",
             success: (res) => {
               if (res.confirm) {
-                common_vendor.index.openSetting();
+                plus && plus.runtime.openURL("app-settings:");
               }
+              this.getKtvList();
             }
           });
+        } else if (error.errCode === 3 || error.errMsg && error.errMsg.includes("timeout")) {
+          common_vendor.index.showToast({
+            title: "定位超时，显示默认列表",
+            icon: "none",
+            duration: 2e3
+          });
+          this.getKtvList();
         } else {
-          common_vendor.index.__f__("log", "at pages/index/index.vue:170", "使用默认位置或不进行距离排序");
+          common_vendor.index.__f__("log", "at pages/index/index.vue:190", "使用默认位置或不进行距离排序");
+          common_vendor.index.showToast({
+            title: "定位失败，显示默认列表",
+            icon: "none",
+            duration: 2e3
+          });
+          this.getKtvList();
         }
       }
     },
     async getKtvList() {
       try {
+        common_vendor.index.__f__("log", "at pages/index/index.vue:203", "开始获取KTV列表...");
         let requestData = {};
         if (this.userLocation) {
           requestData.latitude = this.userLocation.latitude;
           requestData.longitude = this.userLocation.longitude;
+          common_vendor.index.__f__("log", "at pages/index/index.vue:212", "使用用户位置信息:", this.userLocation);
+        } else {
+          common_vendor.index.__f__("log", "at pages/index/index.vue:214", "没有用户位置信息，将获取默认KTV列表");
         }
         const res = await common_vendor.index.request({
           url: "http://catdog.dachaonet.com/get_ktv_list.php",
@@ -105,9 +131,9 @@ const _sfc_main = {
         });
         if (res.data.success) {
           this.ktvList = res.data.data || [];
-          common_vendor.index.__f__("log", "at pages/index/index.vue:198", "KTV列表获取成功:", this.ktvList);
+          common_vendor.index.__f__("log", "at pages/index/index.vue:229", "KTV列表获取成功:", this.ktvList);
         } else {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:200", "获取KTV列表失败:", res.data.message);
+          common_vendor.index.__f__("error", "at pages/index/index.vue:231", "获取KTV列表失败:", res.data.message);
           this.ktvList = [
             {
               id: 1,
@@ -133,7 +159,7 @@ const _sfc_main = {
           ];
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:228", "获取KTV列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:259", "获取KTV列表失败:", error);
         this.ktvList = [
           {
             id: 1,
@@ -208,9 +234,9 @@ const _sfc_main = {
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
     a: $data.statusBarHeight + "px",
-    b: common_assets._imports_1,
+    b: common_assets._imports_0,
     c: common_vendor.t($data.userInfo.nickname || "柠檬水橘子"),
-    d: common_assets._imports_1$1,
+    d: common_assets._imports_1,
     e: common_vendor.o((...args) => $options.upgradeVip && $options.upgradeVip(...args)),
     f: $data.ktvList.length > 0
   }, $data.ktvList.length > 0 ? {

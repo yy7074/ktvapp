@@ -1,5 +1,5 @@
 <template>
-	<view class="login-container">
+	<view class="login-container" :class="{ 'code-mode': showCodeInput }">
 		<!-- 状态栏占位 -->
 		<view class="status-bar" :style="{height: statusBarHeight + 'px'}"></view>
 		
@@ -8,13 +8,15 @@
 			<text class="back-icon">‹</text>
 		</view>
 		
-		<!-- Logo区域 -->
+		<!-- Logo与标题区域（根据状态切换装饰图） -->
 		<view class="logo-section">
 			<view class="logo-container">
-				<view class="k-logo">K</view>
+				<!-- 使用设计图替换K标识 -->
+				<image class="k-logo-img" :src="kLogoSrc" mode="widthFix" />
 			</view>
-			<view class="welcome-text">嗨，我是商K预约</view>
-			<view class="description-container">
+			<view class="welcome-text" v-if="!showCodeInput">嗨，我是商K预约</view>
+			<view class="welcome-title" v-else>欢迎登录</view>
+			<view class="description-container" v-if="!showCodeInput">
 				<text class="description">在这里你可以搜索附近的商K</text>
 				<text class="description">并由客服按照你的喜好预约</text>
 			</view>
@@ -23,9 +25,10 @@
 		<!-- 登录表单卡片 -->
 		<view class="login-card">
 			<view class="login-form">
-				<view class="form-title">验证码登录</view>
+				<view class="form-title" v-if="!showCodeInput">验证码登录</view>
+				<view class="form-title" v-else>请输入验证码</view>
 				
-				<view class="input-container">
+				<view class="input-container" v-if="!showCodeInput">
 					<view class="phone-input-wrapper">
 						<view class="phone-icon">📱</view>
 						<input 
@@ -39,29 +42,28 @@
 				</view>
 				
 				<view class="code-input-group" v-if="showCodeInput">
-					<text class="code-label">请输入验证码</text>
-					<text class="code-sent">验证码已通过短信发送至：</text>
-					<text class="phone-display">+86 {{ phone }}</text>
+					<text class="code-sent">验证码已通过短信发送至:</text>
+					<text class="phone-display">+ 86 {{ phone }}</text>
 					<button class="resend-btn" @click="resendCode">重新获取</button>
 					
-									<view class="code-inputs">
-					<input 
-						v-for="(item, index) in codeArray" 
-						:key="index"
-						:ref="`codeInput${index}`"
-						:class="['code-digit', `code-digit-${index}`, { 'active': currentInputIndex === index, 'filled': codeArray[index] }]"
-						v-model="codeArray[index]" 
-						type="number" 
-						maxlength="1"
-						@input="onCodeInput(index, $event)"
-						@focus="onInputFocus(index)"
-						@blur="onInputBlur(index)"
-						:focus="currentInputIndex === index"
-						:cursor-spacing="0"
-						:selection-start="0"
-						:selection-end="1"
-					/>
-				</view>
+					<view class="code-inputs">
+						<input 
+							v-for="(item, index) in codeArray" 
+							:key="index"
+							:ref="`codeInput${index}`"
+							:class="['code-digit', `code-digit-${index}`, { 'active': currentInputIndex === index, 'filled': codeArray[index] }]"
+							v-model="codeArray[index]" 
+							type="number" 
+							maxlength="1"
+							@input="onCodeInput(index, $event)"
+							@focus="onInputFocus(index)"
+							@blur="onInputBlur(index)"
+							:focus="currentInputIndex === index"
+							:cursor-spacing="0"
+							:selection-start="0"
+							:selection-end="1"
+						/>
+					</view>
 				</view>
 				
 				<button 
@@ -74,8 +76,8 @@
 				</button>
 			</view>
 			
-			<!-- 协议 -->
-			<view class="agreement">
+			<!-- 协议（仅手机号页显示） -->
+			<view class="agreement" v-if="!showCodeInput">
 				<view class="agreement-item" @click="toggleAgreement">
 					<view class="checkbox" :class="{ 'checked': agreed }">
 						<text class="checkmark" v-if="agreed">✓</text>
@@ -118,6 +120,10 @@ export default {
 			} else {
 				return this.codeArray.every(code => code !== '') && this.agreed;
 			}
+		},
+		kLogoSrc() {
+			// 统一使用项目静态资源中的K图标
+			return '/static/k-logo.jpg';
 		}
 	},
 	onLoad() {
@@ -160,7 +166,7 @@ export default {
 		
 		async sendCode() {
 			try {
-				// 调用真实的短信API
+				// 调用真实的短信API（可替换为本地地址）
 				const res = await uni.request({
 					url: 'http://catdog.dachaonet.com/send_code.php',
 					method: 'POST',
@@ -195,8 +201,6 @@ export default {
 					throw new Error(res.data.message || '发送失败');
 				}
 				
-
-				
 			} catch (error) {
 				console.error('发送验证码失败:', error);
 				uni.showToast({
@@ -218,7 +222,7 @@ export default {
 					return;
 				}
 				
-				// 调用真实的登录API
+				// 调用真实的登录API（可替换为本地地址）
 				const res = await uni.request({
 					url: 'http://catdog.dachaonet.com/login.php',
 					method: 'POST',
@@ -345,18 +349,16 @@ export default {
 			this.currentInputIndex = index;
 			
 			// 如果当前输入框已有内容，选中它
-			if (this.codeArray[index]) {
-				this.$nextTick(() => {
-					try {
-						const inputRef = this.$refs[`codeInput${index}`];
-						if (inputRef && inputRef[0]) {
-							inputRef[0].select();
-						}
-					} catch (error) {
-						// 忽略选中失败的错误
+			this.$nextTick(() => {
+				try {
+					const inputRef = this.$refs[`codeInput${index}`];
+					if (inputRef && inputRef[0]) {
+						inputRef[0].select();
 					}
-				});
-			}
+				} catch (error) {
+					// 忽略选中失败的错误
+				}
+			});
 		},
 		
 		onInputBlur(index) {
@@ -410,6 +412,12 @@ export default {
 	padding: 0;
 }
 
+/* 验证码页：顶部右侧小K装饰，整体更紧凑 */
+.login-container.code-mode .logo-section {
+	padding-top: 80rpx;
+	margin-bottom: 40rpx;
+}
+
 .status-bar {
 	width: 100%;
 }
@@ -436,6 +444,7 @@ export default {
 	text-align: center;
 	padding-top: 150rpx;
 	margin-bottom: 120rpx;
+	position: relative;
 }
 
 .logo-container {
@@ -444,20 +453,20 @@ export default {
 	position: relative;
 }
 
-.k-logo {
+/* 使用设计图的K图形替代 */
+.k-logo-img {
 	width: 180rpx;
-	height: 180rpx;
-	background: linear-gradient(135deg, #7ED321 0%, #5CB85C 100%);
-	border-radius: 16rpx;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 100rpx;
-	font-weight: 800;
-	color: white;
-	text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.4);
-	box-shadow: 0 8rpx 32rpx rgba(126, 211, 33, 0.4), 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
-	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	display: block;
+	margin: 0 auto;
+}
+
+/* 验证码页的小K放到右上角 */
+.login-container.code-mode .k-logo-img {
+	width: 150rpx;
+	position: absolute;
+	right: 60rpx;
+	top: 0;
+	transform: translateY(-40rpx);
 }
 
 .welcome-text {
@@ -466,6 +475,14 @@ export default {
 	margin-bottom: 40rpx;
 	color: #FFFFFF;
 	letter-spacing: 1rpx;
+}
+
+.welcome-title {
+	font-size: 48rpx;
+	font-weight: 700;
+	color: #FFFFFF;
+	text-align: left;
+	padding: 0 40rpx;
 }
 
 .description-container {
@@ -524,6 +541,11 @@ export default {
 	border-radius: 3rpx;
 }
 
+/* 验证码页标题与按钮间距更接近视觉 */
+.login-container.code-mode .form-title {
+	margin-bottom: 30rpx;
+}
+
 .input-container {
 	margin-bottom: 50rpx;
 }
@@ -561,16 +583,9 @@ export default {
 }
 
 .code-input-group {
-	margin-bottom: 70rpx;
-	padding: 0 20rpx;
-}
-
-.code-label {
-	font-size: 32rpx;
 	margin-bottom: 30rpx;
-	display: block;
-	color: #FFFFFF;
-	font-weight: 500;
+	padding: 0 20rpx;
+	position: relative;
 }
 
 .code-sent {
@@ -582,24 +597,25 @@ export default {
 }
 
 .phone-display {
-	font-size: 36rpx;
+	font-size: 44rpx;
 	font-weight: 600;
 	display: block;
-	margin-bottom: 30rpx;
+	margin-bottom: 20rpx;
 	color: #FFFFFF;
 	letter-spacing: 2rpx;
 }
 
 .resend-btn {
-	background: transparent;
-	border: 2rpx solid #7ED321;
-	color: #7ED321;
-	font-size: 28rpx;
-	padding: 16rpx 40rpx;
-	border-radius: 50rpx;
-	margin-bottom: 50rpx;
-	font-weight: 500;
-	float: right;
+	position: absolute;
+	right: 20rpx;
+	top: 0;
+	background: #7ED321;
+	color: #1C1C1E;
+	border: none;
+	font-size: 26rpx;
+	padding: 14rpx 28rpx;
+	border-radius: 40rpx;
+	font-weight: 600;
 }
 
 .code-inputs {

@@ -101,6 +101,7 @@ const _sfc_main = {
       this.selectedPeopleCount = this.peopleCounts[this.peopleCountIndex];
     },
     async submitBooking() {
+      var _a;
       if (!this.canSubmit)
         return;
       common_vendor.index.showLoading({
@@ -108,8 +109,54 @@ const _sfc_main = {
       });
       try {
         const bookingData = {
+          ktv_id: this.ktvInfo.id,
+          ktv_name: this.ktvInfo.name,
+          user_id: this.userInfo.id,
+          user_phone: this.userInfo.phone,
+          booking_time: this.selectedTime,
+          room_type: this.selectedRoomType,
+          people_count: this.selectedPeopleCount,
+          remark: this.remark
+        };
+        common_vendor.index.__f__("log", "at pages/booking/booking.vue:259", "提交预约数据:", bookingData);
+        const response = await common_vendor.index.request({
+          url: "http://catdog.dachaonet.com/create_booking.php",
+          method: "POST",
+          header: {
+            "Content-Type": "application/json"
+          },
+          data: bookingData
+        });
+        common_vendor.index.__f__("log", "at pages/booking/booking.vue:271", "预约API响应:", response);
+        if (response.statusCode === 200 && response.data.success) {
+          common_vendor.index.hideLoading();
+          this.showSuccess = true;
+          setTimeout(() => {
+            this.showSuccess = false;
+            common_vendor.index.navigateBack();
+          }, 2e3);
+          const localBooking = {
+            id: response.data.data.booking_id,
+            ...bookingData,
+            status: "pending",
+            created_at: (/* @__PURE__ */ new Date()).toISOString()
+          };
+          const mockBookings = common_vendor.index.getStorageSync("mockBookings") || [];
+          mockBookings.push(localBooking);
+          common_vendor.index.setStorageSync("mockBookings", mockBookings);
+        } else {
+          common_vendor.index.hideLoading();
+          common_vendor.index.showToast({
+            title: ((_a = response.data) == null ? void 0 : _a.message) || "预约失败",
+            icon: "none",
+            duration: 3e3
+          });
+        }
+      } catch (error) {
+        common_vendor.index.hideLoading();
+        common_vendor.index.__f__("error", "at pages/booking/booking.vue:307", "预约失败:", error);
+        const fallbackData = {
           id: Date.now(),
-          // 使用时间戳作为ID
           ktv_id: this.ktvInfo.id,
           ktv_name: this.ktvInfo.name,
           user_id: this.userInfo.id,
@@ -119,26 +166,23 @@ const _sfc_main = {
           people_count: this.selectedPeopleCount,
           remark: this.remark,
           status: "pending",
-          created_at: (/* @__PURE__ */ new Date()).toISOString()
+          created_at: (/* @__PURE__ */ new Date()).toISOString(),
+          is_local_only: true
+          // 标记为仅本地数据
         };
-        common_vendor.index.__f__("log", "at pages/booking/booking.vue:262", "模拟预约提交:", bookingData);
-        await new Promise((resolve) => setTimeout(resolve, 1500));
         const mockBookings = common_vendor.index.getStorageSync("mockBookings") || [];
-        mockBookings.push(bookingData);
+        mockBookings.push(fallbackData);
         common_vendor.index.setStorageSync("mockBookings", mockBookings);
-        common_vendor.index.hideLoading();
+        common_vendor.index.showToast({
+          title: "网络异常，已保存到本地",
+          icon: "none",
+          duration: 3e3
+        });
         this.showSuccess = true;
         setTimeout(() => {
           this.showSuccess = false;
           common_vendor.index.navigateBack();
         }, 2e3);
-      } catch (error) {
-        common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/booking/booking.vue:283", "预约失败:", error);
-        common_vendor.index.showToast({
-          title: "网络错误",
-          icon: "none"
-        });
       }
     },
     getStatusText(status) {
@@ -160,7 +204,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     a: $data.statusBarHeight + "px",
     b: common_assets._imports_0$1,
     c: common_vendor.o((...args) => $options.goBack && $options.goBack(...args)),
-    d: common_assets._imports_1,
+    d: common_assets._imports_0,
     e: common_vendor.t($data.userInfo.nickname || "柠檬水橘子"),
     f: common_assets._imports_0,
     g: common_vendor.t($data.ktvInfo.name || "搜索附近的商K"),

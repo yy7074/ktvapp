@@ -24,11 +24,42 @@ const _sfc_main = {
     this.getBookingList();
   },
   methods: {
-    getBookingList() {
-      const mockBookings = common_vendor.index.getStorageSync("mockBookings") || [];
-      this.bookingList = mockBookings.sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      );
+    async getBookingList() {
+      try {
+        const userInfo = common_vendor.index.getStorageSync("userInfo");
+        if (!userInfo || !userInfo.phone) {
+          common_vendor.index.showToast({
+            title: "请先登录",
+            icon: "none"
+          });
+          return;
+        }
+        common_vendor.index.showLoading({
+          title: "加载中..."
+        });
+        const response = await common_vendor.index.request({
+          url: `http://catdog.dachaonet.com/get_user_bookings.php?user_phone=${userInfo.phone}`,
+          method: "GET"
+        });
+        common_vendor.index.__f__("log", "at pages/bookings/bookings.vue:130", "预约列表API响应:", response);
+        if (response.statusCode === 200 && response.data.success) {
+          this.bookingList = response.data.data.bookings || [];
+        } else {
+          common_vendor.index.__f__("warn", "at pages/bookings/bookings.vue:137", "API获取失败，使用本地数据");
+          const mockBookings = common_vendor.index.getStorageSync("mockBookings") || [];
+          this.bookingList = mockBookings.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        }
+        common_vendor.index.hideLoading();
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/bookings/bookings.vue:145", "获取预约列表失败:", error);
+        common_vendor.index.hideLoading();
+        const mockBookings = common_vendor.index.getStorageSync("mockBookings") || [];
+        this.bookingList = mockBookings.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        common_vendor.index.showToast({
+          title: "网络异常，显示本地数据",
+          icon: "none"
+        });
+      }
     },
     getStatusText(status) {
       const statusMap = {
@@ -52,18 +83,73 @@ const _sfc_main = {
       common_vendor.index.showModal({
         title: "确认取消",
         content: "确定要取消这个预约吗？",
-        success: (res) => {
+        success: async (res) => {
+          var _a;
           if (res.confirm) {
-            const mockBookings = common_vendor.index.getStorageSync("mockBookings") || [];
-            const index = mockBookings.findIndex((booking) => booking.id === item.id);
-            if (index !== -1) {
-              mockBookings[index].status = "cancelled";
-              common_vendor.index.setStorageSync("mockBookings", mockBookings);
-              this.getBookingList();
-              common_vendor.index.showToast({
-                title: "预约已取消",
-                icon: "success"
+            try {
+              const userInfo = common_vendor.index.getStorageSync("userInfo");
+              if (!userInfo || !userInfo.phone) {
+                common_vendor.index.showToast({
+                  title: "请先登录",
+                  icon: "none"
+                });
+                return;
+              }
+              common_vendor.index.showLoading({
+                title: "取消中..."
               });
+              const response = await common_vendor.index.request({
+                url: "http://catdog.dachaonet.com/cancel_booking.php",
+                method: "POST",
+                header: {
+                  "Content-Type": "application/json"
+                },
+                data: {
+                  booking_id: item.id,
+                  user_phone: userInfo.phone
+                }
+              });
+              common_vendor.index.__f__("log", "at pages/bookings/bookings.vue:214", "取消预约API响应:", response);
+              if (response.statusCode === 200 && response.data.success) {
+                common_vendor.index.hideLoading();
+                common_vendor.index.showToast({
+                  title: "预约已取消",
+                  icon: "success"
+                });
+                this.getBookingList();
+                const mockBookings = common_vendor.index.getStorageSync("mockBookings") || [];
+                const index = mockBookings.findIndex((booking) => booking.id === item.id);
+                if (index !== -1) {
+                  mockBookings[index].status = "cancelled";
+                  common_vendor.index.setStorageSync("mockBookings", mockBookings);
+                }
+              } else {
+                common_vendor.index.hideLoading();
+                common_vendor.index.showToast({
+                  title: ((_a = response.data) == null ? void 0 : _a.message) || "取消失败",
+                  icon: "none"
+                });
+              }
+            } catch (error) {
+              common_vendor.index.__f__("error", "at pages/bookings/bookings.vue:245", "取消预约失败:", error);
+              common_vendor.index.hideLoading();
+              const mockBookings = common_vendor.index.getStorageSync("mockBookings") || [];
+              const index = mockBookings.findIndex((booking) => booking.id === item.id);
+              if (index !== -1) {
+                mockBookings[index].status = "cancelled";
+                mockBookings[index].is_local_cancelled = true;
+                common_vendor.index.setStorageSync("mockBookings", mockBookings);
+                this.getBookingList();
+                common_vendor.index.showToast({
+                  title: "网络异常，已本地取消",
+                  icon: "none"
+                });
+              } else {
+                common_vendor.index.showToast({
+                  title: "取消失败",
+                  icon: "none"
+                });
+              }
             }
           }
         }

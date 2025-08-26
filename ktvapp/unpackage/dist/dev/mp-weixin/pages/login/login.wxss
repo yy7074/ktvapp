@@ -8,6 +8,12 @@
 	flex-direction: column;
 	padding: 0;
 }
+
+/* 验证码页：顶部右侧小K装饰，整体更紧凑 */
+.login-container.code-mode .logo-section.data-v-e4e4508d {
+	padding-top: 80rpx;
+	margin-bottom: 40rpx;
+}
 .status-bar.data-v-e4e4508d {
 	width: 100%;
 }
@@ -31,26 +37,28 @@
 	text-align: center;
 	padding-top: 150rpx;
 	margin-bottom: 120rpx;
+	position: relative;
 }
 .logo-container.data-v-e4e4508d {
 	display: inline-block;
 	margin-bottom: 60rpx;
 	position: relative;
 }
-.k-logo.data-v-e4e4508d {
+
+/* 使用设计图的K图形替代 */
+.k-logo-img.data-v-e4e4508d {
 	width: 180rpx;
-	height: 180rpx;
-	background: linear-gradient(135deg, #7ED321 0%, #5CB85C 100%);
-	border-radius: 16rpx;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 100rpx;
-	font-weight: 800;
-	color: white;
-	text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.4);
-	box-shadow: 0 8rpx 32rpx rgba(126, 211, 33, 0.4), 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
-	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	display: block;
+	margin: 0 auto;
+}
+
+/* 验证码页的小K放到右上角 */
+.login-container.code-mode .k-logo-img.data-v-e4e4508d {
+	width: 150rpx;
+	position: absolute;
+	right: 60rpx;
+	top: 0;
+	transform: translateY(-40rpx);
 }
 .welcome-text.data-v-e4e4508d {
 	font-size: 36rpx;
@@ -58,6 +66,13 @@
 	margin-bottom: 40rpx;
 	color: #FFFFFF;
 	letter-spacing: 1rpx;
+}
+.welcome-title.data-v-e4e4508d {
+	font-size: 48rpx;
+	font-weight: 700;
+	color: #FFFFFF;
+	text-align: left;
+	padding: 0 40rpx;
 }
 .description-container.data-v-e4e4508d {
 	display: flex;
@@ -110,6 +125,11 @@
 	background: #7ED321;
 	border-radius: 3rpx;
 }
+
+/* 验证码页标题与按钮间距更接近视觉 */
+.login-container.code-mode .form-title.data-v-e4e4508d {
+	margin-bottom: 30rpx;
+}
 .input-container.data-v-e4e4508d {
 	margin-bottom: 50rpx;
 }
@@ -146,15 +166,9 @@
 	font-weight: 300;
 }
 .code-input-group.data-v-e4e4508d {
-	margin-bottom: 70rpx;
-	padding: 0 20rpx;
-}
-.code-label.data-v-e4e4508d {
-	font-size: 32rpx;
 	margin-bottom: 30rpx;
-	display: block;
-	color: #FFFFFF;
-	font-weight: 500;
+	padding: 0 20rpx;
+	position: relative;
 }
 .code-sent.data-v-e4e4508d {
 	font-size: 28rpx;
@@ -164,23 +178,24 @@
 	font-weight: 300;
 }
 .phone-display.data-v-e4e4508d {
-	font-size: 36rpx;
+	font-size: 44rpx;
 	font-weight: 600;
 	display: block;
-	margin-bottom: 30rpx;
+	margin-bottom: 20rpx;
 	color: #FFFFFF;
 	letter-spacing: 2rpx;
 }
 .resend-btn.data-v-e4e4508d {
-	background: transparent;
-	border: 2rpx solid #7ED321;
-	color: #7ED321;
-	font-size: 28rpx;
-	padding: 16rpx 40rpx;
-	border-radius: 50rpx;
-	margin-bottom: 50rpx;
-	font-weight: 500;
-	float: right;
+	position: absolute;
+	right: 20rpx;
+	top: 0;
+	background: #7ED321;
+	color: #1C1C1E;
+	border: none;
+	font-size: 26rpx;
+	padding: 14rpx 28rpx;
+	border-radius: 40rpx;
+	font-weight: 600;
 }
 .code-inputs.data-v-e4e4508d {
 	display: flex;
@@ -199,6 +214,24 @@
 	border: 1.5rpx solid rgba(255, 255, 255, 0.15);
 	font-weight: 600;
 	box-shadow: inset 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+	transition: all 0.3s ease;
+	caret-color: #7ED321;
+}
+.code-digit.active.data-v-e4e4508d {
+	border-color: #7ED321;
+	background: rgba(126, 211, 33, 0.1);
+	box-shadow: 
+		inset 0 2rpx 8rpx rgba(0, 0, 0, 0.1),
+		0 0 0 4rpx rgba(126, 211, 33, 0.2);
+	transform: scale(1.05);
+}
+.code-digit.filled.data-v-e4e4508d {
+	background: rgba(126, 211, 33, 0.15);
+	border-color: #7ED321;
+	color: #7ED321;
+}
+.code-digit.data-v-e4e4508d:focus {
+	outline: none;
 }
 .main-btn.data-v-e4e4508d {
 	width: 100%;

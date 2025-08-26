@@ -1,10 +1,11 @@
 <?php
+require_once __DIR__ . '/env.php';
 // 阿里云短信服务配置
-define('ALIYUN_ACCESS_KEY_ID', 'LTAI5tAgxEfwZrWw1sSpm9qF');
-define('ALIYUN_ACCESS_KEY_SECRET', 'WpZgkZH9eNLdtc7deUiGzU7gqp5uRK');
+define('ALIYUN_ACCESS_KEY_ID', envValue('ALIYUN_ACCESS_KEY_ID', ''));
+define('ALIYUN_ACCESS_KEY_SECRET', envValue('ALIYUN_ACCESS_KEY_SECRET', ''));
 define('ALIYUN_SMS_REGION', 'cn-hangzhou');
-define('ALIYUN_SMS_SIGN_NAME', '大潮网络');
-define('ALIYUN_SMS_TEMPLATE_CODE', 'SMS_474780238');
+define('ALIYUN_SMS_SIGN_NAME', envValue('ALIYUN_SMS_SIGN_NAME', ''));
+define('ALIYUN_SMS_TEMPLATE_CODE', envValue('ALIYUN_SMS_TEMPLATE_CODE', ''));
 
 // 短信发送限制配置
 define('SMS_CODE_EXPIRE_TIME', 300); // 验证码有效期5分钟
