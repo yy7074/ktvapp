@@ -17,7 +17,9 @@
             "delay" : 0
         },
         /* 模块配置 */
-        "modules" : {},
+        "modules" : {
+            "Geolocation" : {}
+        },
         /* 应用发布信息 */
         "distribute" : {
             /* android打包配置 */
@@ -37,11 +39,20 @@
                     "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
                     "<uses-permission android:name=\"android.permission.FLASHLIGHT\"/>",
                     "<uses-feature android:name=\"android.hardware.camera\"/>",
-                    "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>"
+                    "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
+                    "<uses-feature android:name=\"android.hardware.location\"/>",
+                    "<uses-feature android:name=\"android.hardware.location.gps\"/>"
                 ]
             },
             /* ios打包配置 */
-            "ios" : {},
+            "ios" : {
+                "privacyDescription" : {
+                    "NSLocationWhenInUseUsageDescription" : "此应用需要获取您的位置信息来推荐附近的KTV",
+                    "NSLocationAlwaysAndWhenInUseUsageDescription" : "此应用需要获取您的位置信息来推荐附近的KTV"
+                }
+            },
             /* SDK配置 */
             "sdkConfigs" : {}
         }
@@ -52,9 +63,18 @@
     "mp-weixin" : {
         "appid" : "wx2ef4744e64c7bc45",
         "setting" : {
-            "urlCheck" : false
+            "urlCheck" : false,
+            "es6" : true,
+            "postcss" : true,
+            "minified" : true
         },
-        "usingComponents" : true
+        "usingComponents" : true,
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "您的位置信息将用于推荐附近的KTV"
+            }
+        },
+        "requiredPrivateInfos" : ["getLocation"]
     },
     "mp-alipay" : {
         "usingComponents" : true

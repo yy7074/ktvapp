@@ -1,7 +1,11 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
 const common_assets = require("../../common/assets.js");
+const CustomTabbar = () => "../../components/custom-tabbar/custom-tabbar.js";
 const _sfc_main = {
+  components: {
+    CustomTabbar
+  },
   data() {
     return {
       statusBarHeight: 0,
@@ -19,7 +23,7 @@ const _sfc_main = {
         this.statusBarHeight = systemInfo.statusBarHeight;
       }
     } catch (error) {
-      common_vendor.index.__f__("log", "at pages/mine/mine.vue:89", "获取系统信息失败，使用默认值");
+      common_vendor.index.__f__("log", "at pages/mine/mine.vue:106", "获取系统信息失败，使用默认值");
       this.statusBarHeight = 44;
     }
   },
@@ -36,7 +40,7 @@ const _sfc_main = {
     },
     async getCardList() {
       try {
-        common_vendor.index.__f__("log", "at pages/mine/mine.vue:109", "模拟获取包厢卡列表");
+        common_vendor.index.__f__("log", "at pages/mine/mine.vue:126", "模拟获取包厢卡列表");
         await new Promise((resolve) => setTimeout(resolve, 500));
         const userInfo = common_vendor.index.getStorageSync("userInfo");
         const mockBookings = common_vendor.index.getStorageSync("mockBookings") || [];
@@ -50,7 +54,7 @@ const _sfc_main = {
           created_at: booking.created_at
         }));
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/mine/mine.vue:129", "获取包厢卡列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/mine/mine.vue:146", "获取包厢卡列表失败:", error);
         this.cardList = [];
       }
     },
@@ -96,16 +100,23 @@ const _sfc_main = {
     }
   }
 };
+if (!Array) {
+  const _easycom_custom_tabbar2 = common_vendor.resolveComponent("custom-tabbar");
+  _easycom_custom_tabbar2();
+}
+const _easycom_custom_tabbar = () => "../../components/custom-tabbar/custom-tabbar.js";
+if (!Math) {
+  _easycom_custom_tabbar();
+}
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
     a: $data.statusBarHeight + "px",
     b: common_assets._imports_0,
     c: common_vendor.t($data.userInfo.nickname || "柠檬水橘子"),
-    d: common_assets._imports_1,
-    e: common_vendor.o((...args) => $options.upgradeVip && $options.upgradeVip(...args)),
-    f: $data.cardList.length > 0
+    d: common_vendor.o((...args) => $options.upgradeVip && $options.upgradeVip(...args)),
+    e: $data.cardList.length > 0
   }, $data.cardList.length > 0 ? {
-    g: common_vendor.f($data.cardList, (item, index, i0) => {
+    f: common_vendor.f($data.cardList, (item, index, i0) => {
       return {
         a: common_vendor.t(item.name),
         b: common_vendor.t($options.getStatusText(item.status)),
@@ -114,14 +125,17 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         e: common_vendor.o(($event) => $options.viewCard(item), index)
       };
     }),
-    h: common_assets._imports_0
+    g: common_assets._imports_0$2
   } : {
-    i: common_assets._imports_0
+    h: common_assets._imports_0$2
   }, {
-    j: common_assets._imports_0$1,
-    k: common_vendor.o((...args) => $options.goToBookings && $options.goToBookings(...args)),
-    l: common_assets._imports_0$1,
-    m: common_vendor.o((...args) => $options.logout && $options.logout(...args))
+    i: common_assets._imports_0$1,
+    j: common_vendor.o((...args) => $options.goToBookings && $options.goToBookings(...args)),
+    k: common_assets._imports_0$1,
+    l: common_vendor.o((...args) => $options.logout && $options.logout(...args)),
+    m: common_vendor.p({
+      current: 1
+    })
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-7c2ebfa5"]]);

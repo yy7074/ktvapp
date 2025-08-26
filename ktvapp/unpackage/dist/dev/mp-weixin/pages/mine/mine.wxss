@@ -1,63 +1,99 @@
 
 .container.data-v-7c2ebfa5 {
 	min-height: 100vh;
-	background: linear-gradient(135deg, #434343 0%, #2C2C2E 100%);
+	background: linear-gradient(180deg, #434343 0%, #313640 100%);
 	color: white;
+	padding-bottom: 160rpx; /* 为自定义tabbar留出空间 */
 }
 .status-bar.data-v-7c2ebfa5 {
 	width: 100%;
 }
-.header.data-v-7c2ebfa5 {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 40rpx 60rpx;
+
+/* === 像素级还原设计图卡片样式 === */
+.header-card.data-v-7c2ebfa5 {
+	padding: 32rpx 32rpx 0 32rpx;
 	margin-bottom: 40rpx;
 }
-.user-info.data-v-7c2ebfa5 {
-	display: flex;
-	align-items: center;
+.profile-card.data-v-7c2ebfa5 {
+	position: relative;
+	background: #2A2E3A;
+	border-radius: 32rpx;
+	padding: 0;
+	height: 240rpx;
+	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.25);
+	overflow: hidden;
 }
-.avatar.data-v-7c2ebfa5 {
+
+/* 头像样式 - 精确还原设计图 */
+.avatar-container.data-v-7c2ebfa5 {
+	position: absolute;
+	left: 32rpx;
+	top: 32rpx;
 	width: 120rpx;
 	height: 120rpx;
 	border-radius: 60rpx;
-	margin-right: 30rpx;
+	border: 4rpx solid #FFFFFF;
+	overflow: hidden;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.3);
 }
-.user-details.data-v-7c2ebfa5 {
-	flex: 1;
+.user-avatar.data-v-7c2ebfa5 {
+	width: 100%;
+	height: 100%;
 }
-.username.data-v-7c2ebfa5 {
-	display: block;
-	font-size: 36rpx;
+
+/* 用户名 - 精确位置还原设计图 */
+.user-name.data-v-7c2ebfa5 {
+	position: absolute;
+	left: 180rpx;
+	top: 68rpx;
+	font-size: 40rpx;
 	font-weight: 500;
-	margin-bottom: 10rpx;
+	color: #FFFFFF;
+	letter-spacing: 1rpx;
+	line-height: 1.2;
 }
-.vip-info.data-v-7c2ebfa5 {
+
+/* VIP区域 */
+.vip-section.data-v-7c2ebfa5 {
+	position: absolute;
+	left: 32rpx;
+	bottom: 32rpx;
+}
+.vip-badge.data-v-7c2ebfa5 {
 	display: flex;
 	align-items: center;
+	gap: 12rpx;
 }
-.vip-icon.data-v-7c2ebfa5 {
-	width: 40rpx;
-	height: 20rpx;
-	margin-right: 15rpx;
+.vip-diamond.data-v-7c2ebfa5 {
+	font-size: 32rpx;
+	color: #FFD700;
 }
 .vip-text.data-v-7c2ebfa5 {
 	font-size: 28rpx;
 	color: #FFD700;
-}
-.upgrade-btn.data-v-7c2ebfa5 {
-	background: #7ED321;
-	color: #2C2C2E;
-	border: none;
-	border-radius: 40rpx;
-	padding: 20rpx 40rpx;
-	font-size: 28rpx;
 	font-weight: 500;
+}
+
+/* 订阅会员按钮 - 精确还原设计图 */
+.subscribe-button.data-v-7c2ebfa5 {
+	position: absolute;
+	right: 32rpx;
+	bottom: 32rpx;
+	background: #7ED321;
+	color: #1C1C1E;
+	border: none;
+	border-radius: 44rpx;
+	padding: 16rpx 32rpx;
+	font-size: 26rpx;
+	font-weight: 600;
+	box-shadow: 0 4rpx 16rpx rgba(126, 211, 33, 0.4);
+	min-width: 140rpx;
+	height: 64rpx;
+	line-height: 32rpx;
 }
 .section-title.data-v-7c2ebfa5 {
 	padding: 0 60rpx;
-	margin-bottom: 40rpx;
+	margin-bottom: 28rpx;
 }
 .title-text.data-v-7c2ebfa5 {
 	font-size: 32rpx;
@@ -141,7 +177,7 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	padding: 120rpx 60rpx;
+	padding: 140rpx 60rpx;
 	margin-bottom: 60rpx;
 }
 .empty-icon.data-v-7c2ebfa5 {
@@ -176,3 +212,4 @@
 	transform: rotate(180deg);
 	opacity: 0.6;
 }
+

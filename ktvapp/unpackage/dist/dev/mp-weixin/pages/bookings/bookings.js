@@ -206,7 +206,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       });
     })
   } : {
-    e: common_assets._imports_0,
+    e: common_assets._imports_0$2,
     f: common_vendor.o((...args) => $options.goToHome && $options.goToHome(...args))
   });
 }

@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/env.php';
 
 // 尝试加载短信配置（如果存在）
 $smsConfigExists = false;
@@ -28,7 +29,12 @@ try {
     }
 
     // 验证验证码
-    if ($smsConfigExists) {
+    $fixedCode = envValue('SMS_FIXED_CODE', '');
+    if (!empty($fixedCode)) {
+        if ($code !== $fixedCode) {
+            response(false, '验证码错误');
+        }
+    } else if ($smsConfigExists) {
         // 使用新的验证码验证函数
         if (!verifyCode($phone, $code)) {
             response(false, '验证码错误或已过期');

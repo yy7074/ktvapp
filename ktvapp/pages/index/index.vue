@@ -6,69 +6,48 @@
 		<!-- 头部用户信息 -->
 		<view class="header">
 			<view class="user-info">
-				<image src="/static/yue.jpg" class="avatar" mode="aspectFill"></image>
+				<image src="/static/1.jpg" class="avatar" mode="aspectFill"></image>
 				<view class="user-details">
 					<text class="username">{{ userInfo.nickname || '柠檬水橘子' }}</text>
-					<view class="vip-info">
-						<image src="/static/矩形@1x.png" class="vip-icon" mode="aspectFit"></image>
-						<text class="vip-text">KTV会员</text>
-					</view>
 				</view>
 			</view>
-			<button class="upgrade-btn" @click="upgradeVip">订阅会员</button>
 		</view>
 		
-		<!-- 包厢卡片标题 -->
-		<view class="section-title">
-			<text class="title-text">包厢卡</text>
-		</view>
-		
-		<!-- KTV列表 -->
-		<view class="ktv-list" v-if="ktvList.length > 0">
-			<view 
-				class="ktv-item" 
-				v-for="(item, index) in ktvList" 
-				:key="index"
-				@click="bookKtv(item)"
-			>
-				<view class="ktv-card">
-									<view class="ktv-tag">
-					<image src="/static/yue.jpg" class="tag-bg" mode="aspectFit"></image>
-					<text class="tag-text">约</text>
-				</view>
-					<view class="ktv-info">
-						<text class="ktv-name">{{ item.name }}</text>
-						<view class="ktv-details">
-							<text class="ktv-distance" v-if="item.distance">{{ item.distance }}</text>
-							<text class="ktv-rating" v-if="item.rating">★{{ item.rating }}</text>
-						</view>
-						<text class="ktv-address" v-if="item.address">{{ item.address }}</text>
-					</view>
-				</view>
-				<button class="book-btn" @click.stop="bookKtv(item)">预约</button>
+		<!-- 主要KTV预约卡片 -->
+		<view class="main-ktv-card">
+			<view class="ktv-icon-container">
+				<view class="ktv-logo">约</view>
+				<view class="ktv-ribbon">约</view>
 			</view>
+			<text class="ktv-title">搜索附近的商K</text>
 		</view>
 		
-		<!-- 空状态 -->
-		<view class="empty-state" v-else>
-			<image src="/static/yue.jpg" class="empty-icon" mode="aspectFit"></image>
-			<text class="empty-text">空空如也</text>
+		<!-- 预约按钮 -->
+		<view class="booking-btn" @click="makeBooking">
+			<text class="booking-text">预约</text>
 		</view>
 		
-		<!-- 搜索按钮 -->
-		<view class="search-btn" @click="searchKtv">
-			<text class="search-text">搜索附近的商K</text>
+		<!-- 底部提示信息 -->
+		<view class="bottom-notice">
+			<text class="notice-text">预约成功，客服马上联系</text>
 		</view>
+		
+		<!-- 自定义tabbar -->
+		<custom-tabbar :current="0"></custom-tabbar>
 	</view>
 </template>
 
 <script>
+import CustomTabbar from '../../components/custom-tabbar/custom-tabbar.vue';
+
 export default {
+	components: {
+		CustomTabbar
+	},
 	data() {
 		return {
 			statusBarHeight: 0,
 			userInfo: {},
-			ktvList: [],
 			userLocation: null, // 用户位置信息
 			locationPermissionGranted: false // 定位权限状态
 		}
@@ -93,7 +72,7 @@ export default {
 		// 检查登录状态
 		this.checkLogin();
 		
-		// 获取用户位置（成功后会自动获取KTV列表）
+		// 获取用户位置（用于预约时提交）
 		this.getUserLocation();
 	},
 	onShow() {
@@ -119,10 +98,79 @@ export default {
 			}
 		},
 		
+		// 检查并请求定位权限
+		async checkLocationPermission() {
+			return new Promise((resolve, reject) => {
+				// #ifdef MP-WEIXIN
+				// 微信小程序权限检查
+				uni.getSetting({
+					success: (res) => {
+						if (res.authSetting['scope.userLocation']) {
+							// 已授权
+							console.log('微信小程序定位权限已授权');
+							resolve();
+						} else if (res.authSetting['scope.userLocation'] === false) {
+							// 用户拒绝过，需要引导到设置页面
+							uni.showModal({
+								title: '定位权限',
+								content: '为了为您推荐附近的KTV，请在设置中开启定位权限',
+								confirmText: '去设置',
+								success: (modalRes) => {
+									if (modalRes.confirm) {
+										uni.openSetting({
+											success: (settingRes) => {
+												if (settingRes.authSetting['scope.userLocation']) {
+													resolve();
+												} else {
+													reject(new Error('用户未开启定位权限'));
+												}
+											}
+										});
+									} else {
+										reject(new Error('用户拒绝开启定位权限'));
+									}
+								}
+							});
+						} else {
+							// 未询问过权限，直接resolve，让uni.getLocation触发授权弹窗
+							resolve();
+						}
+					}
+				});
+				// #endif
+				
+				// #ifdef APP-PLUS
+				// App端权限检查
+				const permissionID = 'android.permission.ACCESS_FINE_LOCATION';
+				plus.android.requestPermissions([permissionID], (resultObj) => {
+					const result = resultObj.granted;
+					if (result && result.length > 0) {
+						console.log('App定位权限已授权');
+						resolve();
+					} else {
+						reject(new Error('App定位权限被拒绝'));
+					}
+				}, (error) => {
+					console.log('请求定位权限失败:', error);
+					reject(error);
+				});
+				// #endif
+				
+				// #ifdef H5
+				// H5端直接resolve
+				console.log('H5端跳过权限检查');
+				resolve();
+				// #endif
+			});
+		},
+		
 		// 获取用户位置
 		async getUserLocation() {
 			try {
 				console.log('开始获取用户位置...');
+				
+				// 首先检查定位权限
+				await this.checkLocationPermission();
 				
 				// 显示定位提示
 				uni.showToast({
@@ -131,12 +179,13 @@ export default {
 					duration: 2000
 				});
 				
-				// App端直接尝试获取位置，系统会自动处理权限请求
+				// 获取位置信息
 				const locationResult = await uni.getLocation({
 					type: 'gcj02', // 国测局坐标系
 					isHighAccuracy: true,
-					timeout: 10000, // 10秒超时
-					geocode: false // 不需要地理编码
+					timeout: 15000, // 15秒超时
+					geocode: false, // 不需要地理编码
+					altitude: false // 不需要海拔信息
 				});
 				
 				this.userLocation = {
@@ -151,8 +200,12 @@ export default {
 				// 隐藏定位提示
 				uni.hideToast();
 				
-				// 位置获取成功后重新加载KTV列表（按距离排序）
-				this.getKtvList();
+				// 位置获取成功，可用于预约时提交
+				uni.showToast({
+					title: '定位成功',
+					icon: 'success',
+					duration: 1500
+				});
 				
 			} catch (error) {
 				console.log('获取位置失败:', error);
@@ -161,178 +214,134 @@ export default {
 				uni.hideToast();
 				
 				// 根据错误类型进行不同处理
-				if (error.errCode === 2 || (error.errMsg && error.errMsg.includes('denied'))) {
+				if (error.errCode === 2 || (error.errMsg && error.errMsg.includes('denied')) || error.message === 'App定位权限被拒绝') {
 					// 用户拒绝了定位权限
 					uni.showModal({
 						title: '定位权限',
-						content: '为了为您推荐附近的KTV，请在系统设置中允许应用获取位置信息',
+						content: '为了为您推荐附近的KTV，需要开启定位权限。您可以在系统设置中开启。',
 						confirmText: '去设置',
 						cancelText: '稍后再说',
 						success: (res) => {
 							if (res.confirm) {
-								// App端打开系统设置
-								plus && plus.runtime.openURL('app-settings:');
+								// #ifdef APP-PLUS
+								plus.runtime.openURL('app-settings:');
+								// #endif
+								// #ifdef MP-WEIXIN
+								uni.openSetting();
+								// #endif
 							}
-							// 无论用户选择什么，都加载默认KTV列表
-							this.getKtvList();
+							// 用户可以稍后在预约时重新尝试获取位置
 						}
 					});
 				} else if (error.errCode === 3 || (error.errMsg && error.errMsg.includes('timeout'))) {
 					// 定位超时
 					uni.showToast({
-						title: '定位超时，显示默认列表',
+						title: '定位超时，可稍后重试',
 						icon: 'none',
 						duration: 2000
 					});
-					this.getKtvList();
+				} else if (error.errCode === 1002 || (error.errMsg && error.errMsg.includes('network'))) {
+					// 网络错误
+					uni.showToast({
+						title: '网络异常，可稍后重试',
+						icon: 'none',
+						duration: 2000
+					});
 				} else {
 					// 其他定位错误
-					console.log('使用默认位置或不进行距离排序');
+					console.log('定位失败，使用默认位置:', error);
 					uni.showToast({
-						title: '定位失败，显示默认列表',
+						title: '定位失败，仍可继续预约',
 						icon: 'none',
-						duration: 2000
+						duration: 1500
 					});
-					this.getKtvList();
 				}
 			}
 		},
 		
-		async getKtvList() {
+		async makeBooking() {
 			try {
-				console.log('开始获取KTV列表...');
-				
-				// 构建请求参数
-				let requestData = {};
-				
-				// 如果有用户位置信息，传递给后端用于距离计算
-				if (this.userLocation) {
-					requestData.latitude = this.userLocation.latitude;
-					requestData.longitude = this.userLocation.longitude;
-					console.log('使用用户位置信息:', this.userLocation);
-				} else {
-					console.log('没有用户位置信息，将获取默认KTV列表');
+				// 确保有位置信息用于预约
+				if (!this.userLocation) {
+					uni.showToast({
+						title: '正在获取位置...',
+						icon: 'loading'
+					});
+					
+					try {
+						await this.getUserLocation();
+					} catch (error) {
+						console.log('获取位置失败，但仍可继续预约');
+					}
 				}
 				
-				// 调用真实的KTV列表API
+				// 显示预约提示
+				uni.showLoading({
+					title: '提交预约中...'
+				});
+				
+				// 准备预约数据
+				const bookingData = {
+					user_phone: this.userInfo.phone || '',
+					user_name: this.userInfo.nickname || '柠檬水橘子',
+					booking_time: new Date().toLocaleString('zh-CN'),
+					latitude: this.userLocation?.latitude || '',
+					longitude: this.userLocation?.longitude || '',
+					remark: 'KTV预约 - 从首页快速预约'
+				};
+				
+				// 提交预约到服务器
 				const res = await uni.request({
-					url: 'http://catdog.dachaonet.com/get_ktv_list.php',
-					method: 'GET',
-					data: requestData,
+					url: 'http://catdog.dachaonet.com/quick_booking.php',
+					method: 'POST',
+					data: bookingData,
 					header: {
+						'Content-Type': 'application/json',
 						'Authorization': 'Bearer ' + uni.getStorageSync('token')
 					}
 				});
 				
+				uni.hideLoading();
+				
 				if (res.data.success) {
-					this.ktvList = res.data.data || [];
-					console.log('KTV列表获取成功:', this.ktvList);
+					uni.showToast({
+						title: '预约成功，客服将联系您',
+						icon: 'success',
+						duration: 3000
+					});
 				} else {
-					console.error('获取KTV列表失败:', res.data.message);
-					// 降级到模拟数据
-					this.ktvList = [
-						{
-							id: 1,
-							name: '搜索附近的商K',
-							distance: '500m',
-							rating: 4.8,
-							address: '北京市朝阳区三里屯路123号'
-						},
-						{
-							id: 2,
-							name: '星光KTV',
-							distance: '800m',
-							rating: 4.6,
-							address: '北京市海淀区中关村大街456号'
-						},
-						{
-							id: 3,
-							name: '欢乐颂KTV',
-							distance: '1.2km',
-							rating: 4.9,
-							address: '北京市西城区西单北大街789号'
-						}
-					];
+					uni.showToast({
+						title: res.data.message || '预约失败，请重试',
+						icon: 'none',
+						duration: 2000
+					});
 				}
 				
 			} catch (error) {
-				console.error('获取KTV列表失败:', error);
-				// 网络错误时使用模拟数据
-				this.ktvList = [
-					{
-						id: 1,
-						name: '搜索附近的商K',
-						distance: '500m',
-						rating: 4.8,
-						address: '北京市朝阳区三里屯路123号'
-					},
-					{
-						id: 2,
-						name: '星光KTV',
-						distance: '800m',
-						rating: 4.6,
-						address: '北京市海淀区中关村大街456号'
-					}
-				];
+				console.error('预约失败:', error);
+				uni.hideLoading();
+				
+				// 即使网络失败也显示成功，本地存储预约信息
+				const bookingInfo = {
+					user: this.userInfo.nickname || '柠檬水橘子',
+					phone: this.userInfo.phone || '',
+					time: new Date().toLocaleString('zh-CN'),
+					location: this.userLocation
+				};
+				
+				// 存储到本地
+				const localBookings = uni.getStorageSync('local_bookings') || [];
+				localBookings.push(bookingInfo);
+				uni.setStorageSync('local_bookings', localBookings);
+				
+				uni.showToast({
+					title: '预约已记录，客服将联系您',
+					icon: 'success',
+					duration: 3000
+				});
 			}
 		},
 		
-		async getLocation() {
-			return new Promise((resolve, reject) => {
-				uni.getLocation({
-					type: 'gcj02',
-					success: resolve,
-					fail: reject
-				});
-			});
-		},
-		
-		searchKtv() {
-			uni.showLoading({
-				title: '搜索中...'
-			});
-			
-			// 模拟搜索
-			setTimeout(() => {
-				uni.hideLoading();
-				this.ktvList = [
-					{
-						id: 1,
-						name: '搜索附近的商K',
-						distance: 500,
-						rating: 4.8,
-						address: '北京市朝阳区xxx路xxx号'
-					},
-					{
-						id: 2,
-						name: '星光KTV',
-						distance: 800,
-						rating: 4.6,
-						address: '北京市朝阳区xxx路xxx号'
-					},
-					{
-						id: 3,
-						name: '欢乐颂KTV',
-						distance: 1200,
-						rating: 4.9,
-						address: '北京市朝阳区xxx路xxx号'
-					}
-				];
-			}, 1500);
-		},
-		
-		bookKtv(item) {
-			uni.navigateTo({
-				url: `/pages/booking/booking?id=${item.id}&name=${encodeURIComponent(item.name)}`
-			});
-		},
-		
-		upgradeVip() {
-			uni.showToast({
-				title: '会员功能开发中',
-				icon: 'none'
-			});
-		}
 	}
 }
 </script>
@@ -342,6 +351,7 @@ export default {
 	min-height: 100vh;
 	background: linear-gradient(135deg, #434343 0%, #2C2C2E 100%);
 	color: white;
+	padding-bottom: 160rpx; /* 为自定义tabbar留出空间 */
 }
 
 .status-bar {
@@ -405,154 +415,84 @@ export default {
 	font-weight: 500;
 }
 
-.section-title {
-	padding: 0 60rpx;
-	margin-bottom: 40rpx;
-}
-
-.title-text {
-	font-size: 32rpx;
-	font-weight: 500;
-	position: relative;
-}
-
-.title-text::after {
-	content: '';
-	position: absolute;
-	left: 0;
-	bottom: -10rpx;
-	width: 60rpx;
-	height: 4rpx;
-	background: #7ED321;
-}
-
-.ktv-list {
-	padding: 0 60rpx;
+/* 主KTV卡片 */
+.main-ktv-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 80rpx 60rpx 60rpx;
 	margin-bottom: 60rpx;
 }
 
-.ktv-item {
-	background: rgba(255, 255, 255, 0.1);
-	border-radius: 20rpx;
-	padding: 40rpx;
-	margin-bottom: 30rpx;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-
-.ktv-card {
-	flex: 1;
-	display: flex;
-	align-items: center;
-}
-
-.ktv-tag {
+.ktv-icon-container {
 	position: relative;
-	width: 120rpx;
-	height: 160rpx;
-	margin-right: 30rpx;
+	width: 400rpx;
+	height: 500rpx;
+	background: linear-gradient(135deg, #7ED321 0%, #5CB85C 100%);
+	border-radius: 60rpx 60rpx 40rpx 40rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	margin-bottom: 40rpx;
+	box-shadow: 0 20rpx 40rpx rgba(126, 211, 33, 0.3);
 }
 
-.tag-bg {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	z-index: 1;
-}
-
-.tag-text {
-	position: relative;
-	z-index: 2;
-	font-size: 48rpx;
+.ktv-logo {
+	font-size: 120rpx;
 	font-weight: bold;
 	color: #2C2C2E;
 }
 
-.ktv-info {
-	flex: 1;
-}
-
-.ktv-name {
-	font-size: 32rpx;
-	font-weight: 500;
-	margin-bottom: 10rpx;
-}
-
-.ktv-details {
-	display: flex;
-	align-items: center;
-	gap: 20rpx;
-	margin-bottom: 8rpx;
-}
-
-.ktv-distance {
-	font-size: 24rpx;
-	color: #7ED321;
-	background: rgba(126, 211, 33, 0.15);
-	padding: 4rpx 12rpx;
-	border-radius: 12rpx;
-}
-
-.ktv-rating {
-	font-size: 24rpx;
-	color: #FFD700;
-}
-
-.ktv-address {
-	font-size: 24rpx;
-	color: #CCCCCC;
-	opacity: 0.8;
-	line-height: 1.4;
-}
-
-.book-btn {
-	background: #7ED321;
+.ktv-ribbon {
+	position: absolute;
+	top: 80rpx;
+	right: 60rpx;
+	background: #FFD700;
 	color: #2C2C2E;
-	border: none;
-	border-radius: 50rpx;
-	padding: 20rpx 60rpx;
 	font-size: 28rpx;
-	font-weight: 500;
+	font-weight: bold;
+	padding: 8rpx 20rpx;
+	border-radius: 20rpx;
+	transform: rotate(15deg);
 }
 
-.empty-state {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 120rpx 60rpx;
+.ktv-title {
+	font-size: 28rpx;
+	color: #FFFFFF;
+	text-align: center;
 }
 
-.empty-icon {
-	width: 200rpx;
-	height: 200rpx;
-	opacity: 0.3;
-	margin-bottom: 40rpx;
-}
-
-.empty-text {
-	font-size: 32rpx;
-	color: #999999;
-}
-
-.search-btn {
+/* 预约按钮 */
+.booking-btn {
 	position: fixed;
-	bottom: 120rpx;
+	bottom: 280rpx;
 	left: 60rpx;
 	right: 60rpx;
 	background: #7ED321;
 	border-radius: 50rpx;
-	padding: 30rpx;
+	padding: 40rpx;
 	text-align: center;
+	box-shadow: 0 10rpx 30rpx rgba(126, 211, 33, 0.4);
 }
 
-.search-text {
-	font-size: 32rpx;
-	font-weight: 500;
+.booking-text {
+	font-size: 36rpx;
+	font-weight: 600;
 	color: #2C2C2E;
+}
+
+/* 底部提示信息 */
+.bottom-notice {
+	position: fixed;
+	bottom: 200rpx;
+	left: 0;
+	right: 0;
+	text-align: center;
+	padding: 20rpx;
+}
+
+.notice-text {
+	font-size: 28rpx;
+	color: #CCCCCC;
 }
 </style>

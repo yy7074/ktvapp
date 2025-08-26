@@ -3,19 +3,28 @@
 		<!-- 状态栏占位 -->
 		<view class="status-bar" :style="{height: statusBarHeight + 'px'}"></view>
 		
-		<!-- 头部用户信息 -->
-		<view class="header">
-			<view class="user-info">
-				<image src="/static/yue.jpg" class="avatar" mode="aspectFill"></image>
-				<view class="user-details">
-					<text class="username">{{ userInfo.nickname || '柠檬水橘子' }}</text>
-					<view class="vip-info">
-						<image src="/static/矩形@1x.png" class="vip-icon" mode="aspectFit"></image>
+		<!-- 头部用户信息卡片 - 像素级还原设计图 -->
+		<view class="header-card">
+			<view class="profile-card">
+				<!-- 用户头像 -->
+				<view class="avatar-container">
+					<image src="/static/1.jpg" class="user-avatar" mode="aspectFill"></image>
+				</view>
+				
+				<!-- 用户姓名 -->
+				<text class="user-name">{{ userInfo.nickname || '柠檬水橘子' }}</text>
+				
+				<!-- VIP徽章 -->
+				<view class="vip-section">
+					<view class="vip-badge">
+						<text class="vip-diamond">💎</text>
 						<text class="vip-text">KTV会员</text>
 					</view>
 				</view>
+				
+				<!-- 订阅会员按钮 -->
+				<button class="subscribe-button" @click="upgradeVip">订阅会员</button>
 			</view>
-			<button class="upgrade-btn" @click="upgradeVip">订阅会员</button>
 		</view>
 		
 		<!-- 包厢卡片标题 -->
@@ -61,11 +70,19 @@
 				<image src="/static/返 回@1x.png" class="menu-arrow" mode="aspectFit"></image>
 			</view>
 		</view>
+		
+		<!-- 自定义tabbar -->
+		<custom-tabbar :current="1"></custom-tabbar>
 	</view>
 </template>
 
 <script>
+import CustomTabbar from '../../components/custom-tabbar/custom-tabbar.vue';
+
 export default {
+	components: {
+		CustomTabbar
+	},
 	data() {
 		return {
 			statusBarHeight: 0,
@@ -184,74 +201,107 @@ export default {
 <style scoped>
 .container {
 	min-height: 100vh;
-	background: linear-gradient(135deg, #434343 0%, #2C2C2E 100%);
+	background: linear-gradient(180deg, #434343 0%, #313640 100%);
 	color: white;
+	padding-bottom: 160rpx; /* 为自定义tabbar留出空间 */
 }
 
 .status-bar {
 	width: 100%;
 }
 
-.header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 40rpx 60rpx;
+/* === 像素级还原设计图卡片样式 === */
+.header-card {
+	padding: 32rpx 32rpx 0 32rpx;
 	margin-bottom: 40rpx;
 }
 
-.user-info {
-	display: flex;
-	align-items: center;
+.profile-card {
+	position: relative;
+	background: #2A2E3A;
+	border-radius: 32rpx;
+	padding: 0;
+	height: 240rpx;
+	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.25);
+	overflow: hidden;
 }
 
-.avatar {
+/* 头像样式 - 精确还原设计图 */
+.avatar-container {
+	position: absolute;
+	left: 32rpx;
+	top: 32rpx;
 	width: 120rpx;
 	height: 120rpx;
 	border-radius: 60rpx;
-	margin-right: 30rpx;
+	border: 4rpx solid #FFFFFF;
+	overflow: hidden;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.3);
 }
 
-.user-details {
-	flex: 1;
+.user-avatar {
+	width: 100%;
+	height: 100%;
 }
 
-.username {
-	display: block;
-	font-size: 36rpx;
+/* 用户名 - 精确位置还原设计图 */
+.user-name {
+	position: absolute;
+	left: 180rpx;
+	top: 68rpx;
+	font-size: 40rpx;
 	font-weight: 500;
-	margin-bottom: 10rpx;
+	color: #FFFFFF;
+	letter-spacing: 1rpx;
+	line-height: 1.2;
 }
 
-.vip-info {
+/* VIP区域 */
+.vip-section {
+	position: absolute;
+	left: 32rpx;
+	bottom: 32rpx;
+}
+
+.vip-badge {
 	display: flex;
 	align-items: center;
+	gap: 12rpx;
 }
 
-.vip-icon {
-	width: 40rpx;
-	height: 20rpx;
-	margin-right: 15rpx;
+.vip-diamond {
+	font-size: 32rpx;
+	color: #FFD700;
 }
 
 .vip-text {
 	font-size: 28rpx;
 	color: #FFD700;
-}
-
-.upgrade-btn {
-	background: #7ED321;
-	color: #2C2C2E;
-	border: none;
-	border-radius: 40rpx;
-	padding: 20rpx 40rpx;
-	font-size: 28rpx;
 	font-weight: 500;
 }
 
+/* 订阅会员按钮 - 精确还原设计图 */
+.subscribe-button {
+	position: absolute;
+	right: 32rpx;
+	bottom: 32rpx;
+	background: #7ED321;
+	color: #1C1C1E;
+	border: none;
+	border-radius: 44rpx;
+	padding: 16rpx 32rpx;
+	font-size: 26rpx;
+	font-weight: 600;
+	box-shadow: 0 4rpx 16rpx rgba(126, 211, 33, 0.4);
+	min-width: 140rpx;
+	height: 64rpx;
+	line-height: 32rpx;
+}
+
+
 .section-title {
 	padding: 0 60rpx;
-	margin-bottom: 40rpx;
+	margin-bottom: 28rpx;
 }
 
 .title-text {
@@ -351,7 +401,7 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	padding: 120rpx 60rpx;
+	padding: 140rpx 60rpx;
 	margin-bottom: 60rpx;
 }
 
@@ -393,4 +443,5 @@ export default {
 	transform: rotate(180deg);
 	opacity: 0.6;
 }
+
 </style> 
